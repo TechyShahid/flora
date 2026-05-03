@@ -46,7 +46,7 @@ The application is built with **React**, **Vite**, and **Vanilla CSS**.
    ```bash
    npm run dev
    ```
-4. Open [http://localhost:5173/](http://localhost:5173/) in your browser.
+4. Open [https://techyshahid.github.io/flora/](https://techyshahid.github.io/flora/) in your browser.
 
 ## 🔍 SEO & Technical Details
 - **SEO Optimized**: Includes meta descriptions, semantic HTML5, and unique IDs for all interactive elements.
