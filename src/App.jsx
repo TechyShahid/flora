@@ -75,7 +75,7 @@ const Hero = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, delay: 0.2 }}
       >
-        <img src="/hero.png" alt="Modern room with plants" />
+        <img src="hero.png" alt="Modern room with plants" />
         <div className="glass hero-badge">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary-color)' }}>
             <Users size={20} />
@@ -233,7 +233,7 @@ const IdentifierTool = () => {
           </div>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
              <img 
-               src={previewUrl || "/monstera.png"} 
+               src={previewUrl || "monstera.png"} 
                alt="Plant Preview" 
                style={{ 
                  maxWidth: '100%', 
