@@ -14,6 +14,8 @@ import {
   Thermometer
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import heroImage from './assets/hero.png';
+import monsteraImage from './assets/monstera.png';
 
 const Navbar = () => {
   const scrollToSection = (id) => {
@@ -75,7 +77,7 @@ const Hero = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, delay: 0.2 }}
       >
-        <img src="hero.png" alt="Modern room with plants" />
+        <img src={heroImage} alt="Modern room with plants" />
         <div className="glass hero-badge">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary-color)' }}>
             <Users size={20} />
@@ -233,7 +235,7 @@ const IdentifierTool = () => {
           </div>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
              <img 
-               src={previewUrl || "monstera.png"} 
+               src={previewUrl || monsteraImage} 
                alt="Plant Preview" 
                style={{ 
                  maxWidth: '100%', 
