@@ -16,6 +16,8 @@ import {
 import { motion } from 'framer-motion';
 import heroImage from './assets/hero.png';
 import monsteraImage from './assets/monstera.png';
+import * as tf from '@tensorflow/tfjs';
+import * as mobilenet from '@tensorflow-models/mobilenet';
 
 const Navbar = () => {
   const scrollToSection = (id) => {
@@ -110,33 +112,20 @@ const IdentifierTool = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [model, setModel] = useState(null);
 
-  const plantDatabase = [
-    {
-      name: 'Monstera Deliciosa',
-      confidence: '98%',
-      light: 'Bright Indirect',
-      water: 'Every 1-2 Weeks',
-      temp: '18-30°C',
-      description: 'The Swiss Cheese Plant is famous for its natural leaf holes.'
-    },
-    {
-      name: 'Sansevieria (Snake Plant)',
-      confidence: '94%',
-      light: 'Low to Bright',
-      water: 'Every 3-4 Weeks',
-      temp: '15-27°C',
-      description: 'An incredibly hardy plant that also purifies indoor air.'
-    },
-    {
-      name: 'Epipremnum aureum (Pothos)',
-      confidence: '96%',
-      light: 'Moderate to Low',
-      water: 'Every 1 Week',
-      temp: '18-24°C',
-      description: 'A versatile trailing vine perfect for beginners.'
-    }
-  ];
+  React.useEffect(() => {
+    const loadModel = async () => {
+      try {
+        const loadedModel = await mobilenet.load();
+        setModel(loadedModel);
+        console.log("MobileNet model loaded.");
+      } catch (err) {
+        console.error("Error loading model", err);
+      }
+    };
+    loadModel();
+  }, []);
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -146,12 +135,28 @@ const IdentifierTool = () => {
       setAnalyzing(true);
       setResult(null);
 
-      // Simulate analysis delay
-      setTimeout(() => {
+      const img = new Image();
+      img.src = url;
+      img.onload = async () => {
+        if (model) {
+          try {
+            const predictions = await model.classify(img);
+            const topPrediction = predictions[0];
+            
+            setResult({
+              name: topPrediction.className.split(',')[0] || 'Unknown Object',
+              confidence: (topPrediction.probability * 100).toFixed(1) + '%',
+              light: 'Bright Indirect',
+              water: 'Check Weekly',
+              temp: '18-25°C',
+              description: `AI Prediction: ${topPrediction.className}. (Using standard MobileNet prototype)`
+            });
+          } catch (err) {
+            console.error("Classification error", err);
+          }
+        }
         setAnalyzing(false);
-        const randomPlant = plantDatabase[Math.floor(Math.random() * plantDatabase.length)];
-        setResult(randomPlant);
-      }, 2500);
+      };
     }
   };
 
