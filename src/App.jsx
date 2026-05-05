@@ -18,6 +18,7 @@ import heroImage from './assets/hero.png';
 import monsteraImage from './assets/monstera.png';
 import * as tf from '@tensorflow/tfjs';
 import * as mobilenet from '@tensorflow-models/mobilenet';
+import { PLANT_DATABASE, LABEL_MAPPING, GENERIC_LABELS } from './data/plants';
 
 const Navbar = () => {
   const scrollToSection = (id) => {
@@ -140,16 +141,62 @@ const IdentifierTool = () => {
       img.onload = async () => {
         if (model) {
           try {
-            const predictions = await model.classify(img);
-            const topPrediction = predictions[0];
+            // Get top 5 predictions to find a better botanical match
+            const predictions = await model.classify(img, 5);
+            console.log("AI Raw Predictions:", predictions);
+            
+            let match = null;
+            let topPrediction = predictions[0];
+            const topLabel = topPrediction.className.toLowerCase();
+
+            // 1. Try to find a direct match in our database using all top 5 labels
+            // But ONLY if the label is specific enough
+            for (const pred of predictions) {
+              const label = pred.className.toLowerCase();
+              
+              // Skip if the label is known to be too generic
+              if (GENERIC_LABELS.some(g => label.includes(g))) continue;
+
+              // Check if any keyword from our database exists in the label
+              for (const key in PLANT_DATABASE) {
+                if (label.includes(key.replace('_', ' '))) {
+                  match = PLANT_DATABASE[key];
+                  break;
+                }
+              }
+              if (match) break;
+
+              // Check our heuristic mapping
+              for (const mapKey in LABEL_MAPPING) {
+                if (label.includes(mapKey)) {
+                  match = PLANT_DATABASE[LABEL_MAPPING[mapKey]];
+                  break;
+                }
+              }
+              if (match) break;
+            }
+
+            // 2. Fallback logic: If no specific match, determine how to present the generic result
+            if (!match) {
+              const isGeneric = GENERIC_LABELS.some(g => topLabel.includes(g));
+              
+              match = {
+                name: isGeneric ? 'Indoor Plant' : topPrediction.className.split(',')[0],
+                commonName: isGeneric ? 'Species Unconfirmed' : 'Botanical Species',
+                light: 'Bright Indirect (Safe Bet)',
+                water: 'Check Weekly',
+                temp: '18-25°C',
+                description: isGeneric 
+                  ? `The AI recognizes this as a "${topLabel}", but needs a closer look at the leaf pattern to identify the exact species.`
+                  : `MobileNet identified this as ${topPrediction.className}. This is a general classification.`,
+                isGeneric: isGeneric
+              };
+            }
             
             setResult({
-              name: topPrediction.className.split(',')[0] || 'Unknown Object',
+              ...match,
               confidence: (topPrediction.probability * 100).toFixed(1) + '%',
-              light: 'Bright Indirect',
-              water: 'Check Weekly',
-              temp: '18-25°C',
-              description: `AI Prediction: ${topPrediction.className}. (Using standard MobileNet prototype)`
+              isPrototype: !match.name.toLowerCase().includes(topLabel.split(',')[0]) || match.isGeneric
             });
           } catch (err) {
             console.error("Classification error", err);
@@ -183,7 +230,21 @@ const IdentifierTool = () => {
                   <img src={previewUrl} alt="Your plant" style={{ width: '120px', height: '120px', borderRadius: '12px', objectFit: 'cover', border: '4px solid var(--white)' }} />
                   <div>
                     <h3 style={{ margin: 0 }}>{result.name}</h3>
-                    <p style={{ color: 'var(--primary-color)', fontWeight: '600' }}>Confidence: {result.confidence}</p>
+                    {result.commonName && <p style={{ margin: 0, opacity: 0.7, fontSize: '0.9rem' }}>{result.commonName}</p>}
+                    <p style={{ color: 'var(--primary-color)', fontWeight: '600', marginTop: '0.5rem' }}>Confidence: {result.confidence}</p>
+                    {result.isPrototype && (
+                      <p style={{ 
+                        fontSize: '0.75rem', 
+                        background: '#fff3cd', 
+                        color: '#856404', 
+                        padding: '4px 8px', 
+                        borderRadius: '4px', 
+                        marginTop: '0.5rem',
+                        display: 'inline-block'
+                      }}>
+                        ⚠️ General prediction. For better accuracy, use a close-up of a leaf.
+                      </p>
+                    )}
                     <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>{result.description}</p>
                   </div>
                 </div>
