@@ -4,7 +4,7 @@ Flora is a premium web application designed for the modern indoor gardener. It c
 
 ## ✨ Key Features
 
-### 1. Instant Plant Recognition
+### 1. Instant Plant Recognition app
 The core of Flora is its AI-powered identification tool. 
 - **How it works**: Snap a photo or upload an image of any plant. Our deep-learning model (simulated) analyzes leaf patterns and structure.
 - **Result**: You get a 99% accurate identification with confidence scores.
